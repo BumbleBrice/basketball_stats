@@ -1,0 +1,12 @@
+<%- contentFor('body') %>
+<div class="error-container">
+    <h1>500</h1>
+    <h2>Erreur serveur</h2>
+    <p>Une erreur inattendue s'est produite. Veuillez réessayer plus tard.</p>
+    <% if (process.env.NODE_ENV === 'development' && error) { %>
+        <div class="error-details">
+            <pre><%= error %></pre>
+        </div>
+    <% } %>
+    <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+</div> 

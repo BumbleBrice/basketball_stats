@@ -1,0 +1,58 @@
+<%- contentFor('body') %>
+<div class="game-live-container">
+    <div class="scoreboard">
+        <div class="team home">
+            <h2><%= game.homeTeam.name %></h2>
+            <div class="score" id="homeScore"><%= game.home_score %></div>
+        </div>
+        <div class="team away">
+            <h2><%= game.awayTeam.name %></h2>
+            <div class="score" id="awayScore"><%= game.away_score %></div>
+        </div>
+    </div>
+
+    <div class="teams-container">
+        <!-- Équipe domicile -->
+        <div class="team-players home">
+            <h3>Joueurs <%= game.homeTeam.name %></h3>
+            <div class="players-grid">
+                <% game.homeTeam.players.forEach(function(player) { %>
+                    <button class="player-btn" 
+                            data-player-id="<%= player.id %>"
+                            data-team-id="<%= game.homeTeam.id %>"
+                            data-number="<%= player.jersey_number %>">
+                        <%= player.jersey_number %> - <%= player.lastName %>
+                    </button>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Actions de stats (initialement cachées) -->
+        <div class="stats-actions" id="statsActions" style="display: none;">
+            <%- include('../partials/game-stats-actions') %>
+        </div>
+
+        <!-- Équipe extérieur -->
+        <div class="team-players away">
+            <h3>Joueurs <%= game.awayTeam.name %></h3>
+            <div class="players-grid">
+                <% game.awayTeam.players.forEach(function(player) { %>
+                    <button class="player-btn" 
+                            data-player-id="<%= player.id %>"
+                            data-team-id="<%= game.awayTeam.id %>"
+                            data-number="<%= player.jersey_number %>">
+                        <%= player.jersey_number %> - <%= player.lastName %>
+                    </button>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des actions -->
+    <div class="actions-history">
+        <h3>Dernières actions</h3>
+        <div id="actionsLog">
+            <!-- Les actions seront ajoutées ici dynamiquement -->
+        </div>
+    </div>
+</div>
