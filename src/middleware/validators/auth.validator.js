@@ -1,6 +1,6 @@
-const { body } = require('express-validator');
+import { body } from 'express-validator';
 
-const registerValidator = [
+export const registerValidator = [
     body('firstname')
         .trim()
         .isLength({ min: 2 })
@@ -30,7 +30,7 @@ const registerValidator = [
         })
 ];
 
-const loginValidator = [
+export const loginValidator = [
     body('email')
         .trim()
         .isEmail()
@@ -42,7 +42,5 @@ const loginValidator = [
         .withMessage('Veuillez entrer votre mot de passe')
 ];
 
-module.exports = {
-    registerValidator,
-    loginValidator
-}; 
+// Si vous préférez exporter un objet par défaut :
+// export default { registerValidator, loginValidator }; 

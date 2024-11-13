@@ -2,10 +2,17 @@
     <div class="container">
         <ul>
             <li><a href="/">Accueil</a></li>
-            <li><a href="/clubs">Clubs</a></li>
-            <li><a href="/teams">Équipes</a></li>
-            <li><a href="/players">Joueurs</a></li>
-            <li><a href="/games">Matchs</a></li>
+            
+            <% if (locals.user) { %>
+                <li><a href="/clubs">Clubs</a></li>
+                <li><a href="/teams">Équipes</a></li>
+                <li><a href="/players">Joueurs</a></li>
+                <li><a href="/games">Matchs</a></li>
+                <li><a href="/auth/logout">Déconnexion</a></li>
+            <% } else { %>
+                <li><a href="/auth/login">Connexion</a></li>
+                <li><a href="/auth/register">Inscription</a></li>
+            <% } %>
         </ul>
     </div>
 </nav>

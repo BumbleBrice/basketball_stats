@@ -1,6 +1,8 @@
-const router = require('express').Router();
-const playersController = require('../controllers/players.controller');
-const { verifyToken } = require('../middleware/auth.middleware');
+import { Router } from 'express';
+import * as playersController from '../controllers/players.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+
+const router = Router();
 
 // Pages de rendu (GET)
 router.get('/', verifyToken, playersController.renderPlayersList);
@@ -14,4 +16,4 @@ router.post('/', verifyToken, playersController.createPlayer);
 router.put('/:id', verifyToken, playersController.updatePlayer);
 router.delete('/:id', verifyToken, playersController.deletePlayer);
 
-module.exports = router; 
+export default router; 

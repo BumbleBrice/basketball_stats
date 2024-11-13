@@ -1,66 +1,69 @@
-class StatsController {
-    async renderTeamStats(req, res) {
-        try {
-            const { teamId } = req.params;
-            res.render('stats/team', { 
-                title: 'Statistiques de l\'équipe',
-                stats: null 
-            });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
-        }
-    }
+import Stats from '../models/stats.model.js';
 
-    async renderPlayerStats(req, res) {
-        try {
-            const { playerId } = req.params;
-            res.render('stats/player', { 
-                title: 'Statistiques du joueur',
-                stats: null 
-            });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
-        }
+// Rendu des pages
+export const renderTeamStats = async (req, res) => {
+    try {
+        const stats = await Stats.getTeamStats(req.params.teamId);
+        res.render('stats/team', {
+            title: 'Statistiques de l\'équipe',
+            stats,
+            scripts: ['team-stats']
+        });
+    } catch (error) {
+        res.status(500).render('error', { message: error.message });
     }
+};
 
-    async renderGameStats(req, res) {
-        try {
-            const { gameId } = req.params;
-            res.render('stats/game', { 
-                title: 'Statistiques du match',
-                stats: null 
-            });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
-        }
+export const renderPlayerStats = async (req, res) => {
+    try {
+        const stats = await Stats.getPlayerStats(req.params.playerId);
+        res.render('stats/player', {
+            title: 'Statistiques du joueur',
+            stats,
+            scripts: ['player-stats']
+        });
+    } catch (error) {
+        res.status(500).render('error', { message: error.message });
     }
+};
 
-    async getTeamStats(req, res) {
-        try {
-            const { teamId } = req.params;
-            res.status(200).json({ stats: null });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+export const renderGameStats = async (req, res) => {
+    try {
+        const stats = await Stats.getGameStats(req.params.gameId);
+        res.render('stats/game', {
+            title: 'Statistiques du match',
+            stats,
+            scripts: ['game-stats']
+        });
+    } catch (error) {
+        res.status(500).render('error', { message: error.message });
     }
+};
 
-    async getPlayerStats(req, res) {
-        try {
-            const { playerId } = req.params;
-            res.status(200).json({ stats: null });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+// API Endpoints
+export const getTeamStats = async (req, res) => {
+    try {
+        const stats = await Stats.getTeamStats(req.params.teamId);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
+};
 
-    async getGameStats(req, res) {
-        try {
-            const { gameId } = req.params;
-            res.status(200).json({ stats: null });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
+export const getPlayerStats = async (req, res) => {
+    try {
+        const stats = await Stats.getPlayerStats(req.params.playerId);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
-module.exports = new StatsController(); 
+export const getGameStats = async (req, res) => {
+    try {
+        const stats = await Stats.getGameStats(req.params.gameId);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}; 

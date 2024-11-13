@@ -1,4 +1,4 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 class UserModel {
     async create({ firstname, lastname, email, password }) {
@@ -56,4 +56,9 @@ class UserModel {
     }
 }
 
-module.exports = new UserModel(); 
+// Créer et exporter une instance unique
+const userModel = new UserModel();
+export default userModel;
+
+// Alternative : exporter la classe si vous préférez créer l'instance ailleurs
+// export default UserModel; 

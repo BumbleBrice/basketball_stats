@@ -1,11 +1,21 @@
-require('dotenv').config();
-const express = require('express');
-const path = require('path');
-const expressLayouts = require('express-ejs-layouts');
-const cookieParser = require('cookie-parser');
-const routes = require('./routes');
-const mysql = require('mysql2/promise');
-const initializeDatabase = require('./config/initDatabase');
+import dotenv from 'dotenv';
+import express from 'express';
+import path from 'path';
+import expressLayouts from 'express-ejs-layouts';
+import cookieParser from 'cookie-parser';
+import routes from './routes/index.js';
+import mysql from 'mysql2/promise';
+import initializeDatabase from './config/initDatabase.js';
+import { fileURLToPath } from 'url';
+import { checkUser } from './middleware/auth.middleware.js';
+import authRoutes from './routes/auth.routes.js';
+
+// Configuration pour __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configuration dotenv
+dotenv.config();
 
 // Vérification de la présence des variables d'environnement critiques
 if (!process.env.JWT_SECRET) {
@@ -27,8 +37,12 @@ app.set('views', path.join(__dirname, '../views'));
 app.use(expressLayouts);
 app.set('layout', 'layouts/main');
 
+// Appliquer checkUser à toutes les routes
+app.use(checkUser);
+
 // Routes
 app.use('/', routes);
+app.use('/auth', authRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
@@ -46,27 +60,25 @@ app.use((err, req, res, next) => {
 
 // Fonction de démarrage asynchrone
 async function startApp() {
-  try {
-    // Initialiser la base de données
-    const dbConfig = await initializeDatabase();
-    
-    // Créer le pool de connexions
-    const pool = mysql.createPool(dbConfig);
-    
-    // Ajouter le pool à l'app pour l'utiliser dans les routes
-    app.locals.db = pool;
-    
-    console.log('Connexion à la base de données établie avec succès');
-    
-    // ... reste de votre configuration d'app ...
-    
-  } catch (error) {
-    console.error('Erreur au démarrage de l\'application:', error);
-    process.exit(1);
-  }
+    try {
+        // Initialiser la base de données
+        const dbConfig = await initializeDatabase();
+        
+        // Créer le pool de connexions
+        const pool = mysql.createPool(dbConfig);
+        
+        // Ajouter le pool à l'app pour l'utiliser dans les routes
+        app.locals.db = pool;
+        
+        console.log('Connexion à la base de données établie avec succès');
+        
+    } catch (error) {
+        console.error('Erreur au démarrage de l\'application:', error);
+        process.exit(1);
+    }
 }
 
 // Démarrer l'application
 startApp();
 
-module.exports = app; 
+export default app; 

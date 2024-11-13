@@ -1,74 +1,147 @@
-class ClubsController {
-    async renderClubsList(req, res) {
-        try {
-            res.render('clubs/list', { 
-                title: 'Liste des clubs',
-                clubs: [] 
+import Club from '../models/club.model.js';
+
+export const renderClubsList = async (req, res) => {
+    try {
+        const clubs = await Club.findByUserId(req.user.id);
+        res.render('clubs/list', { 
+            title: 'Mes Clubs',
+            clubs 
+        });
+    } catch (error) {
+        console.error('Erreur:', error);
+        res.status(500).render('error', { 
+            message: 'Erreur lors du chargement des clubs' 
+        });
+    }
+};
+
+export const renderCreateClub = (req, res) => {
+    res.render('clubs/create', { 
+        title: 'Créer un club' 
+    });
+};
+
+export const renderClubDetails = async (req, res) => {
+    try {
+        const club = await Club.findById(req.params.id);
+        if (!club) {
+            return res.status(404).render('error', { 
+                message: 'Club non trouvé' 
             });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
         }
+        
+        const teams = await Club.getTeams(req.params.id);
+        
+        res.render('clubs/details', { 
+            title: club.name,
+            club,
+            teams 
+        });
+    } catch (error) {
+        console.error('Erreur lors du chargement du club:', error);
+        res.status(500).render('error', { 
+            message: 'Erreur lors du chargement du club' 
+        });
     }
+};
 
-    async renderCreateClub(req, res) {
-        try {
-            res.render('clubs/create', { title: 'Créer un club' });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
-        }
-    }
-
-    async renderClubDetails(req, res) {
-        try {
-            const { id } = req.params;
-            res.render('clubs/details', { 
-                title: 'Détails du club',
-                club: null 
+export const renderEditClub = async (req, res) => {
+    try {
+        const club = await Club.findById(req.params.id);
+        if (!club) {
+            return res.status(404).render('error', { 
+                message: 'Club non trouvé' 
             });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
         }
+        res.render('clubs/edit', { 
+            title: `Modifier ${club.name}`,
+            club 
+        });
+    } catch (error) {
+        console.error('Erreur lors du chargement du club:', error);
+        res.status(500).render('error', { 
+            message: 'Erreur lors du chargement du club' 
+        });
     }
+};
 
-    async renderEditClub(req, res) {
-        try {
-            const { id } = req.params;
-            res.render('clubs/edit', { 
-                title: 'Modifier le club',
-                club: null 
+export const createClub = async (req, res) => {
+    try {
+        const { name, code_club } = req.body;
+        
+        if (!name || !code_club) {
+            return res.status(400).json({ 
+                message: 'Le nom et le code du club sont requis' 
             });
-        } catch (error) {
-            res.status(500).render('errors/500', { error: error.message });
         }
-    }
 
-    async createClub(req, res) {
-        try {
-            const { name, code_club } = req.body;
-            res.status(201).json({ message: 'Club créé avec succès' });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
+        const existingClub = await Club.findByCode(code_club);
+        if (existingClub) {
+            return res.status(400).json({ 
+                message: 'Ce code club est déjà utilisé' 
+            });
         }
-    }
 
-    async updateClub(req, res) {
-        try {
-            const { id } = req.params;
-            const { name, code_club } = req.body;
-            res.status(200).json({ message: 'Club mis à jour avec succès' });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
+        const clubId = await Club.create({
+            name,
+            code_club,
+            userId: req.user.id
+        });
+
+        res.status(201).json({ 
+            message: 'Club créé avec succès',
+            clubId 
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la création du club:', error);
+        res.status(500).json({ 
+            message: 'Erreur lors de la création du club' 
+        });
+    }
+};
+
+export const updateClub = async (req, res) => {
+    try {
+        const { name } = req.body;
+        const updated = await Club.update(req.params.id, { name });
+        
+        if (!updated) {
+            return res.status(404).json({ 
+                message: 'Club non trouvé' 
+            });
         }
-    }
 
-    async deleteClub(req, res) {
-        try {
-            const { id } = req.params;
-            res.status(200).json({ message: 'Club supprimé avec succès' });
-        } catch (error) {
-            res.status(500).json({ message: error.message });
+        res.json({ 
+            message: 'Club mis à jour avec succès' 
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du club:', error);
+        res.status(500).json({ 
+            message: 'Erreur lors de la mise à jour du club' 
+        });
+    }
+};
+
+export const deleteClub = async (req, res) => {
+    try {
+        const deleted = await Club.delete(req.params.id);
+        
+        if (!deleted) {
+            return res.status(404).json({ 
+                message: 'Club non trouvé' 
+            });
         }
-    }
-}
 
-module.exports = new ClubsController();
+        res.json({ 
+            message: 'Club supprimé avec succès' 
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la suppression du club:', error);
+        res.status(500).json({ 
+            message: 'Erreur lors de la suppression du club' 
+        });
+    }
+};

@@ -1,4 +1,4 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 class TeamModel {
     async create({ name, level, category, club_id }) {
@@ -85,6 +85,48 @@ class TeamModel {
             throw error;
         }
     }
+
+    async findByClub(clubId) {
+        try {
+            const [rows] = await db.query(
+                'SELECT * FROM teams WHERE club_id = ? ORDER BY category, level, name',
+                [clubId]
+            );
+            return rows;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getTeamStats(teamId, season = null) {
+        try {
+            let query = `
+                SELECT 
+                    COUNT(DISTINCT g.id) as total_games,
+                    SUM(CASE WHEN g.home_team_score > g.away_team_score AND g.home_team_id = ? THEN 1
+                         WHEN g.away_team_score > g.home_team_score AND g.away_team_id = ? THEN 1
+                         ELSE 0 END) as wins,
+                    SUM(CASE WHEN g.home_team_score < g.away_team_score AND g.home_team_id = ? THEN 1
+                         WHEN g.away_team_score < g.home_team_score AND g.away_team_id = ? THEN 1
+                         ELSE 0 END) as losses
+                FROM games g
+                WHERE (g.home_team_id = ? OR g.away_team_id = ?)
+                AND g.status = 'completed'
+            `;
+            const params = [teamId, teamId, teamId, teamId, teamId, teamId];
+
+            if (season) {
+                query += ' AND YEAR(g.date) = ?';
+                params.push(season);
+            }
+
+            const [rows] = await db.query(query, params);
+            return rows[0];
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
-module.exports = new TeamModel(); 
+const teamModel = new TeamModel();
+export default teamModel; 

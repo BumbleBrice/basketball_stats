@@ -1,4 +1,4 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 class StatModel {
     async addGameStat(gameId, playerId, teamId, statType, value = 1) {
@@ -84,6 +84,50 @@ class StatModel {
             throw error;
         }
     }
+
+    // Méthodes supplémentaires suggérées
+    async getGameStats(gameId) {
+        try {
+            const [rows] = await db.query(
+                `SELECT 
+                    p.firstname, p.lastname,
+                    t.name as team_name,
+                    gs.*
+                 FROM game_statistics gs
+                 INNER JOIN players p ON gs.player_id = p.id
+                 INNER JOIN teams t ON gs.team_id = t.id
+                 WHERE gs.game_id = ?
+                 ORDER BY t.id, p.lastname, p.firstname`,
+                [gameId]
+            );
+            return rows;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getPlayerCareerStats(playerId) {
+        try {
+            const [rows] = await db.query(
+                `SELECT 
+                    season,
+                    SUM(points) as total_points,
+                    SUM(rebounds) as total_rebounds,
+                    SUM(assists) as total_assists,
+                    COUNT(DISTINCT game_id) as games_played
+                 FROM game_statistics
+                 WHERE player_id = ?
+                 GROUP BY season
+                 ORDER BY season DESC`,
+                [playerId]
+            );
+            return rows;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
-module.exports = new StatModel(); 
+// Créer et exporter une instance unique
+const statModel = new StatModel();
+export default statModel; 

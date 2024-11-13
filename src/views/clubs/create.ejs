@@ -1,0 +1,51 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+    <h1><%= title %></h1>
+
+    <form id="createClubForm" class="mt-4">
+        <div class="mb-3">
+            <label for="name" class="form-label">Nom du club</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="code_club" class="form-label">Code du club</label>
+            <input type="text" class="form-control" id="code_club" name="code_club" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Créer</button>
+        <a href="/clubs" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+
+<script>
+document.getElementById('createClubForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    try {
+        const response = await fetch('/clubs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: document.getElementById('name').value,
+                code_club: document.getElementById('code_club').value
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            window.location.href = '/clubs';
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('Erreur lors de la création du club');
+    }
+});
+</script>
+
+<%- include('../partials/footer') %> 

@@ -1,16 +1,24 @@
-const router = require('express').Router();
-const clubsController = require('../controllers/clubs.controller');
-const { verifyToken } = require('../middleware/auth.middleware');
+import { Router } from 'express';
+import { 
+    renderClubsList, 
+    renderCreateClub, 
+    renderClubDetails, 
+    renderEditClub, 
+    createClub, 
+    updateClub, 
+    deleteClub 
+} from '../controllers/clubs.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
-// Pages de rendu (GET)
-router.get('/', verifyToken, clubsController.renderClubsList);
-router.get('/create', verifyToken, clubsController.renderCreateClub);
-router.get('/:id', verifyToken, clubsController.renderClubDetails);
-router.get('/:id/edit', verifyToken, clubsController.renderEditClub);
+const router = Router();
 
-// Actions (POST, PUT, DELETE)
-router.post('/', verifyToken, clubsController.createClub);
-router.put('/:id', verifyToken, clubsController.updateClub);
-router.delete('/:id', verifyToken, clubsController.deleteClub);
+router.get('/', verifyToken, renderClubsList);
+router.get('/create', verifyToken, renderCreateClub);
+router.get('/:id', verifyToken, renderClubDetails);
+router.get('/:id/edit', verifyToken, renderEditClub);
 
-module.exports = router;
+router.post('/', verifyToken, createClub);
+router.put('/:id', verifyToken, updateClub);
+router.delete('/:id', verifyToken, deleteClub);
+
+export default router;

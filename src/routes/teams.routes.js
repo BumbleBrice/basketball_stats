@@ -1,6 +1,8 @@
-const router = require('express').Router();
-const teamsController = require('../controllers/teams.controller');
-const { verifyToken } = require('../middleware/auth.middleware');
+import { Router } from 'express';
+import * as teamsController from '../controllers/teams.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+
+const router = Router();
 
 // Pages de rendu (GET)
 router.get('/', verifyToken, teamsController.renderTeamsList);
@@ -17,4 +19,4 @@ router.delete('/:id', verifyToken, teamsController.deleteTeam);
 router.post('/:id/players', verifyToken, teamsController.addPlayerToTeam);
 router.delete('/:id/players/:playerId', verifyToken, teamsController.removePlayerFromTeam);
 
-module.exports = router;
+export default router;

@@ -1,52 +1,92 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
-class ClubModel {
-    async create({ name, code_club, created_by }) {
+class Club {
+    static async findByUserId(userId) {
         try {
-            const [result] = await db.query(
-                'INSERT INTO clubs (name, code_club, created_by) VALUES (?, ?, ?)',
-                [name, code_club, created_by]
-            );
-            return result.insertId;
+            const [rows] = await db.query(`
+                SELECT c.* 
+                FROM clubs c
+                JOIN user_clubs uc ON c.id = uc.club_id
+                WHERE uc.user_id = ?
+            `, [userId]);
+            return rows;
         } catch (error) {
             throw error;
         }
     }
 
-    async findById(id) {
+    static async findById(id) {
         try {
-            const [rows] = await db.query(
-                'SELECT * FROM clubs WHERE id = ?',
-                [id]
-            );
+            const [rows] = await db.query('SELECT * FROM clubs WHERE id = ?', [id]);
             return rows[0];
         } catch (error) {
             throw error;
         }
     }
 
-    async update(id, { name, code_club }) {
+    static async findByCode(code) {
         try {
-            await db.query(
-                'UPDATE clubs SET name = ?, code_club = ? WHERE id = ?',
-                [name, code_club, id]
+            const [rows] = await db.query('SELECT * FROM clubs WHERE code_club = ?', [code]);
+            return rows[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async create({ name, code_club, userId }) {
+        try {
+            const connection = await db.getConnection();
+            await connection.beginTransaction();
+
+            try {
+                // Créer le club
+                const [result] = await connection.query(
+                    'INSERT INTO clubs (name, code_club) VALUES (?, ?)',
+                    [name, code_club]
+                );
+
+                // Associer l'utilisateur comme admin
+                await connection.query(
+                    'INSERT INTO user_clubs (user_id, club_id, role) VALUES (?, ?, ?)',
+                    [userId, result.insertId, 'admin']
+                );
+
+                await connection.commit();
+                return result.insertId;
+
+            } catch (error) {
+                await connection.rollback();
+                throw error;
+            } finally {
+                connection.release();
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async update(id, { name }) {
+        try {
+            const [result] = await db.query(
+                'UPDATE clubs SET name = ? WHERE id = ?',
+                [name, id]
             );
-            return true;
+            return result.affectedRows > 0;
         } catch (error) {
             throw error;
         }
     }
 
-    async delete(id) {
+    static async delete(id) {
         try {
-            await db.query('DELETE FROM clubs WHERE id = ?', [id]);
-            return true;
+            const [result] = await db.query('DELETE FROM clubs WHERE id = ?', [id]);
+            return result.affectedRows > 0;
         } catch (error) {
             throw error;
         }
     }
 
-    async getTeams(clubId) {
+    static async getTeams(clubId) {
         try {
             const [rows] = await db.query(
                 'SELECT * FROM teams WHERE club_id = ?',
@@ -57,18 +97,6 @@ class ClubModel {
             throw error;
         }
     }
-
-    async addUser(clubId, userId, role) {
-        try {
-            await db.query(
-                'INSERT INTO user_clubs (club_id, user_id, role) VALUES (?, ?, ?)',
-                [clubId, userId, role]
-            );
-            return true;
-        } catch (error) {
-            throw error;
-        }
-    }
 }
 
-module.exports = new ClubModel(); 
+export default Club; 

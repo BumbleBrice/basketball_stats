@@ -1,37 +1,47 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const verifyToken = (req, res, next) => {
+export const verifyToken = (req, res, next) => {
     try {
         const token = req.cookies.token;
-
+        
         if (!token) {
             return res.redirect('/auth/login');
         }
 
-        if (!process.env.JWT_SECRET) {
-            throw new Error('Configuration JWT manquante');
-        }
-
-        // Vérifier le token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
-            algorithms: ['HS256'] // Spécifier explicitement l'algorithme accepté
-        });
-
-        // Ajouter les informations de l'utilisateur à la requête
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
-
-        // Ajouter les informations aux variables locales pour les vues
+        
+        // Rendre l'utilisateur disponible pour tous les templates
         res.locals.user = decoded;
-        res.locals.isAuthenticated = true;
-
+        
         next();
     } catch (error) {
-        console.error('Erreur de vérification du token:', error);
         res.clearCookie('token');
         res.redirect('/auth/login');
     }
 };
 
-module.exports = {
-    verifyToken
+// Middleware optionnel pour les routes publiques
+export const checkUser = (req, res, next) => {
+    try {
+        const token = req.cookies.token;
+        
+        if (token) {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            res.locals.user = decoded;
+        }
+        
+        next();
+    } catch (error) {
+        res.locals.user = null;
+        next();
+    }
 };
+
+// Si vous avez besoin d'exporter plusieurs fonctions, vous pouvez le faire ainsi :
+export const otherMiddleware = () => {
+    // ...
+};
+
+// Ou vous pouvez exporter un objet par défaut si vous préférez :
+// export default { verifyToken, otherMiddleware };

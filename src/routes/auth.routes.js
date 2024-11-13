@@ -1,48 +1,37 @@
-const router = require('express').Router();
-const AuthController = require('../controllers/auth.controller');
-const { registerValidator, loginValidator } = require('../middleware/validators/auth.validator');
+import { Router } from 'express';
+import * as authController from '../controllers/auth.controller.js';
 
-// Middleware pour vérifier si l'utilisateur est déjà connecté
-const checkGuest = (req, res, next) => {
-    const token = req.cookies.token;
-    if (token) {
-        return res.redirect('/');
-    }
-    next();
-};
+const router = Router();
 
 // Pages de rendu (GET)
-router.get('/login', checkGuest, (req, res) => {
+router.get('/login', (req, res) => {
     res.render('auth/login', { 
         title: 'Connexion',
         error: null,
-        form: {},
-        scripts: ['auth']
+        form: {}
     });
 });
 
-router.get('/register', checkGuest, (req, res) => {
+router.get('/register', (req, res) => {
     res.render('auth/register', { 
         title: 'Inscription',
         error: null,
-        form: {},
-        scripts: ['auth']
+        form: {}
     });
 });
 
 // Actions (POST)
-router.post('/register', 
-    checkGuest,
-    registerValidator,
-    AuthController.register
-);
+router.post('/login', authController.login);
+router.post('/register', authController.register);
+router.post('/logout', authController.logout);
 
-router.post('/login',
-    checkGuest,
-    loginValidator,
-    AuthController.login
-);
+// Route de test
+router.get('/test-logout', (req, res) => {
+    res.send(`
+        <form action="/auth/logout" method="POST">
+            <button type="submit">Test Déconnexion</button>
+        </form>
+    `);
+});
 
-router.post('/logout', AuthController.logout);
-
-module.exports = router;
+export default router;

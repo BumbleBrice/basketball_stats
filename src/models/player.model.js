@@ -1,4 +1,4 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 class PlayerModel {
     async create({ firstname, lastname, birthdate }) {
@@ -87,4 +87,9 @@ class PlayerModel {
     }
 }
 
-module.exports = new PlayerModel(); 
+// Créer et exporter une instance unique
+const playerModel = new PlayerModel();
+export default playerModel;
+
+// Alternative : exporter la classe
+// export default PlayerModel; 
