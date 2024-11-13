@@ -4,6 +4,8 @@ const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const cookieParser = require('cookie-parser');
 const routes = require('./routes');
+const mysql = require('mysql2/promise');
+const initializeDatabase = require('./config/initDatabase');
 
 // Vérification de la présence des variables d'environnement critiques
 if (!process.env.JWT_SECRET) {
@@ -41,5 +43,30 @@ app.use((err, req, res, next) => {
         error: process.env.NODE_ENV === 'development' ? err : {}
     });
 });
+
+// Fonction de démarrage asynchrone
+async function startApp() {
+  try {
+    // Initialiser la base de données
+    const dbConfig = await initializeDatabase();
+    
+    // Créer le pool de connexions
+    const pool = mysql.createPool(dbConfig);
+    
+    // Ajouter le pool à l'app pour l'utiliser dans les routes
+    app.locals.db = pool;
+    
+    console.log('Connexion à la base de données établie avec succès');
+    
+    // ... reste de votre configuration d'app ...
+    
+  } catch (error) {
+    console.error('Erreur au démarrage de l\'application:', error);
+    process.exit(1);
+  }
+}
+
+// Démarrer l'application
+startApp();
 
 module.exports = app; 
